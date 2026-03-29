@@ -1,46 +1,52 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const { MongoClient } = require("mongodb");
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat App</title>
+</head>
+<body>
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+<h2>Chat 💬</h2>
 
-// 👉 apna MongoDB link yaha paste kar
-const uri = "mongodb+srv://admin:prashant@123@cluster0.xjpxqgw.mongodb.net/?appName=Cluster0";
+<input id="name" placeholder="Enter name"><br><br>
+<input id="message" placeholder="Type message">
+<button onclick="sendMessage()">Send</button>
 
-const client = new MongoClient(uri);
+<div id="chat"></div>
 
-let db;
+<script src="/socket.io/socket.io.js"></script>
 
-// connect database
-async function connectDB() {
-  try {
-    await client.connect();
-    db = client.db("chatApp");
-    console.log("MongoDB Connected 🔥");
-  } catch (err) {
-    console.log(err);
-  }
-}
+<script>
+const socket = io();
 
-connectDB();
-
-app.use(express.static("server"));
-
-io.on("connection", (socket) => {
-  console.log("User connected");
-
-  socket.on("message", async (data) => {
-    // save in DB
-    await db.collection("messages").insertOne(data);
-
-    // send to all users
-    io.emit("message", data);
+socket.on("loadMessages", (messages) => {
+  messages.forEach(msg => {
+    addMessage(msg);
   });
 });
 
-server.listen(3000, () => {
-  console.log("Server running on port 3000");
+socket.on("message", (data) => {
+  addMessage(data);
 });
+
+function sendMessage() {
+  const name = document.getElementById("name").value;
+  const message = document.getElementById("message").value;
+
+  socket.emit("message", {
+    name: name,
+    text: message
+  });
+
+  document.getElementById("message").value = "";
+}
+
+function addMessage(data) {
+  const chat = document.getElementById("chat");
+  const p = document.createElement("p");
+  p.innerText = data.name + ": " + data.text;
+  chat.appendChild(p);
+}
+</script>
+
+</body>
+</html>
