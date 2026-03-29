@@ -2,79 +2,46 @@
 <html>
 <head>
   <title>Chat App</title>
-  <style>
-    body {
-      font-family: Arial;
-      background: #f0f0f0;
-      padding: 20px;
-    }
-
-    #chat {
-      list-style: none;
-      padding: 0;
-      max-width: 400px;
-    }
-
-    li {
-      padding: 8px;
-      margin: 5px 0;
-      background: #fff;
-      border-radius: 5px;
-    }
-
-    .me {
-      background: #dcf8c6;
-      text-align: right;
-    }
-  </style>
 </head>
+
 <body>
 
 <h2>Chat 💬</h2>
 
-<input id="message" placeholder="Type message..." />
+<input id="name" placeholder="Enter name">
+<br><br>
+
+<input id="message" placeholder="Type message">
 <button onclick="sendMessage()">Send</button>
 
-<ul id="chat"></ul>
+<div id="chat"></div>
 
-<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
 
 <script>
-  const socket = io("http://localhost:3000");
+const socket = io();
 
-  const username = prompt("Apna naam likho 😎");
+function sendMessage() {
+  const name = document.getElementById("name").value;
+  const message = document.getElementById("message").value;
 
-  function sendMessage() {
-    const msg = document.getElementById("message").value;
-
-    const data = {
-      message: msg,
-      name: username
-    };
-
-    socket.emit("send_message", data);
-
-    const li = document.createElement("li");
-    li.innerText = "Me (" + username + "): " + msg;
-    li.classList.add("me");
-
-    document.getElementById("chat").appendChild(li);
-
-    document.getElementById("message").value = "";
-  }
-
-  socket.on("receive_message", (data) => {
-    const li = document.createElement("li");
-    li.innerText = data.name + ": " + data.message;
-
-    document.getElementById("chat").appendChild(li);
+  socket.emit("message", {
+    name: name,
+    text: message
   });
 
-  document.getElementById("message").addEventListener("keypress", function(e) {
-    if (e.key === "Enter") {
-      sendMessage();
-    }
-  });
+  document.getElementById("message").value = "";
+}
+
+// ⚠️ sirf yaha show hoga
+socket.on("message", (data) => {
+  const chat = document.getElementById("chat");
+
+  const p = document.createElement("p");
+  p.innerText = data.name + ": " + data.text;
+
+  chat.appendChild(p);
+});
 </script>
 
 </body>

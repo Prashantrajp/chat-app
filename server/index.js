@@ -3,19 +3,23 @@ const http = require("http");
 const { Server } = require("socket.io");
 
 const app = express();
-app.use(express.static(__dirname));
-
 const server = http.createServer(app);
+const io = new Server(server);
 
-const io = new Server(server, {
-  cors: { origin: "*" },
+// HTML serve karega
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/index.html");
 });
 
 io.on("connection", (socket) => {
   console.log("User connected");
 
-  socket.on("send_message", (data) => {
-    socket.broadcast.emit("receive_message", data);
+  socket.on("message", (data) => {
+    io.emit("message", data); // sabko bhej
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
   });
 });
 
