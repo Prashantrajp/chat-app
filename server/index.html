@@ -18,12 +18,14 @@
 <script>
 const socket = io();
 
+// load old messages
 socket.on("loadMessages", (messages) => {
   messages.forEach(msg => {
     addMessage(msg);
   });
 });
 
+// new message
 socket.on("message", (data) => {
   addMessage(data);
 });
